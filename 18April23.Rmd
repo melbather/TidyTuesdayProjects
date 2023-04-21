@@ -1,0 +1,97 @@
+---
+title: "Tidy Tuesday Week of 18 April 2023"
+author: "Melissa Bather"
+date: "2023-04-21"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load libraries and data
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+tuesdata <- tidytuesdayR::tt_load('2023-04-18')
+tuesdata <- tidytuesdayR::tt_load(2023, week = 16)
+founder_crops <- tuesdata$founder_crops
+```
+
+
+Let's check out what the most common crop families are
+
+```{r}
+crops_by_family <- founder_crops %>%
+  group_by(family) %>%
+  summarise(count = n()) 
+most_common_crops_by_family <- crops_by_family %>%
+  arrange(desc(count)) %>%
+  head(10)
+
+ggplot(most_common_crops_by_family, aes(x=reorder(family, -count),y=count)) +
+  geom_bar(stat = "identity", col = "#feca57", fill = "#feca57") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Family") +
+  ylab("Number") +
+  ggtitle("Number of Crops by Family")
+```
+
+Poaceae is the most common family. Let's look at the most common genera within that family.
+
+```{r}
+most_common_genus <- founder_crops %>%
+  filter(family == "Poaceae") %>%
+  group_by(genus) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  head(10)
+
+ggplot(most_common_genus, aes(x=reorder(genus, -count),y=count)) +
+  geom_bar(stat = "identity", col = "#feca57", fill = "#feca57") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Genus") +
+  ylab("Number") +
+  ggtitle("Number of Crops by Genus in the Poaceae Family")
+```
+
+Does edibility have any correlation with frequency?
+
+```{r, message=FALSE}
+edibilness <- founder_crops %>%
+  mutate(is_edible = ifelse(is.na(edibility), "No", "Yes")) %>%
+  group_by(genus, edibility, is_edible, family) %>%
+  summarise(count = n())
+ggplot(edibilness, aes(x=reorder(genus, -count), y=count, col=is_edible, fill=is_edible)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~is_edible) +
+  theme(axis.title.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_blank())
+```
+
+Is there a true difference?
+
+```{r}
+total_edibility <- edibilness %>%
+  group_by(is_edible) %>%
+  summary(count = sum(count))
+```
+
+
+
+
+
+
+
+
+
+
+
