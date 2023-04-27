@@ -1,7 +1,6 @@
 ---
 title: "Tidy Tuesday Week of 18 April 2023"
 author: "Melissa Bather"
-date: "2023-04-21"
 output: html_document
 ---
 
@@ -12,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Load libraries and data
 
-```{r}
+```{r message=FALSE}
 library(ggplot2)
 library(dplyr)
 
@@ -69,7 +68,7 @@ edibilness <- founder_crops %>%
   mutate(is_edible = ifelse(is.na(edibility), "No", "Yes")) %>%
   group_by(genus, edibility, is_edible, family) %>%
   summarise(count = n())
-ggplot(edibilness, aes(x=reorder(genus, -count), y=count, col=is_edible, fill=is_edible)) +
+ggplot(edibilness, aes(x=reorder(genus, -count), y=count)) +
   geom_bar(stat = "identity") +
   facet_wrap(~is_edible) +
   theme(axis.title.x=element_blank(),
@@ -82,12 +81,24 @@ Is there a true difference?
 ```{r}
 total_edibility <- edibilness %>%
   group_by(is_edible) %>%
-  summary(count = sum(count))
+  summarise(count = sum(count))
 ```
 
+1481 of the plants are inedible and 3009 of the plants are edible. 
 
+Let's use an exact binomial test to see if the proportion of edible plants is statistically significant. 'Success' is considered an edible plant. Under the null hypothesis, we would expect half the plants to be edible.
 
+$$
+H_0: p = 0.5
+\\
+H_1: p \neq 0.5
+$$
 
+```{r}
+binom.test(3009, 3009 + 1481, 0.5)
+```
+
+This test suggests there is a higher proportion of edible plants than inedible plants. The reason for this cannot be determined, but I would assume that it is because humans are more likely to encourage the growth and distribution of plants they are able to eat. 
 
 
 
